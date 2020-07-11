@@ -2,38 +2,25 @@
 #include<string>
 #include "opencv2/opencv.hpp"
 using std::string;
-using std::cout;
-using std::ends;
 using std::endl;
+using std::ends;
+using std::cout;
 
 int main()
 {
-	//原始图像读取、显示
-	string fileName{ "./images/行走天涯柴犬.jpg" };
-	cv::Mat src{ cv::imread(fileName) };
-	string winTitle{ "showPic" };
+	cv::Mat src{ cv::imread("./images/行走天涯柴犬.jpg") };
+	string winTitle{ "dogPic" };
 	cv::namedWindow(winTitle, cv::WINDOW_AUTOSIZE);
+
+	//深拷贝,独立的Mat
+	auto tempSrc0{ src.clone() };//复制,也可以用src.copyTo(tempSrc0)
+	tempSrc0 = cv::Mat::zeros(src.size(), src.type());//黑色图片
 	cv::imshow(winTitle, src);
 	cv::waitKey(0);
 
-	//图像转换为灰度图
-	cv::Mat tempPic;
-	//色彩转换
-	cv::cvtColor(src, tempPic, cv::COLOR_RGB2GRAY);
-	//cv::cvtColor(src, tempPic, cv::COLOR_BGR2GRAY);
-	cv::imshow(winTitle, tempPic);
+	//浅拷贝
+	auto tempSrc1{ src };//智能指针复制
+	tempSrc1 = cv::Mat::zeros(src.size(), src.type());//改变了共同的源//size不同时,会成为独立的源!
+	cv::imshow(winTitle, src);
 	cv::waitKey(0);
-
-	//保存转换出来的灰度图
-	string newFile{ "黑白色行走天涯柴犬.jpg" };
-	bool ok{ cv::imwrite(newFile,tempPic) };
-	if (ok) {
-		cout << "图片生成完毕" << endl;
-	}
-	else
-	{
-		cout << "图片转换失败" << ends;
-	}
-
-	return 0;
 }
