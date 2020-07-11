@@ -20,7 +20,8 @@ int main()
 
 	//浅拷贝
 	auto tempSrc1{ src };//智能指针复制
-	tempSrc1 = cv::Mat::zeros(src.size(), src.type());//改变了共同的源//size不同时,会成为独立的源!
+	//CV_8UC3 3通道的8位数据类型
+	tempSrc1 = cv::Mat::zeros(src.size(), CV_8UC3);//改变了共同的源//size不同时,会成为独立的源!
 	cv::imshow(winTitle, src);
 	cv::waitKey(0);
 }
