@@ -1,6 +1,6 @@
 ﻿#include<iostream>
 #include<string>
-#include<opencv2/opencv.hpp>
+#include "opencv2/opencv.hpp"
 using std::cout;
 using std::endl;
 using std::ends;
@@ -8,26 +8,16 @@ using std::string;
 
 int main()
 {
-	string pathDir{ "F:/Code/openCV/opencv/sources/samples/data/" };
-	string img0{ pathDir + "WindowsLogo.jpg" };
-	string img1{ pathDir + "LinuxLogo.jpg" };
-	cv::Mat src0{ cv::imread(img0) };
-	cv::imshow("img0", src0);
-	cv::Mat src1{ cv::imread(img1) };
-	cv::imshow("img1",src1);
-
-	cv::Mat result{ cv::Mat::zeros(src0.size(),src0.type()) };
-	cv::add(src0, src1, result);
-	cv::imshow("add", result);
-
-	cv::subtract(src0, src1, result);
-	cv::imshow("subtract",result);
-
-	cv::multiply(src0, src1, result);
-	cv::imshow("multiply", result);
-
-	cv::divide(src0, src1, result);
-	cv::imshow("divide",result);
-
+	string filePath{ "G:/Practice/openCV/images/LUT_test.PNG" };
+	cv::Mat src{ cv::imread(filePath) };
+	string winTitle{ "picTest" };
+	cv::namedWindow(winTitle, cv::WINDOW_AUTOSIZE);
+	//原图展示
+	cv::imshow(winTitle, src);
 	cv::waitKey(0);
+	//LUT转换后
+	cv::applyColorMap(src, src, cv::COLORMAP_JET);
+	cv::imshow(winTitle, src);
+	cv::waitKey(0);
+	return 0;
 }
