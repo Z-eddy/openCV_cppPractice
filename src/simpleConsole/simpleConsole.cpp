@@ -1,34 +1,30 @@
-﻿#include<iostream>
-#include<string>
-#include<vector>
-#include "opencv2/opencv.hpp"
-using std::vector;
-using std::cout;
-using std::endl;
-using std::ends;
+﻿#include<string>
+#include"opencv2/opencv.hpp"
 using std::string;
 
 int main()
 {
-	string fileName{ "./images/dog.jpg" };
-	auto src{ cv::imread(fileName) };
+	cv::Mat src{ cv::imread("G:/Practice/openCV/images/TinyGreen.PNG") };
 	if (src.empty()) {
-		cout << "read file error" << endl;
 		return 0;
 	}
 	string winTitle{ "dogPic" };
 	cv::namedWindow(winTitle, cv::WINDOW_AUTOSIZE);
-	//原图显示
 	cv::imshow(winTitle, src);
+
+	cv::Mat dst{ cv::Mat::zeros(src.size(),src.type()) };
+	cv::cvtColor(src, dst, cv::COLOR_BGR2YUV);//YUV
+	cv::imshow("YUV", dst);
+	cv::cvtColor(src, dst, cv::COLOR_BGR2YCrCb);//YCrCb
+	cv::imshow("YCrCb", dst);
+	cv::cvtColor(src, dst, cv::COLOR_BGR2HSV);//转成HSV图片
+	cv::imshow("HSV", dst);
+
+	cv::Scalar tMin{ 26,43,46 }, tMax{ 77,255,255 };//范围内为白色,范围外黑色
+	cv::inRange(dst, tMin, tMax, dst);
+	cv::cvtColor(dst, dst, cv::COLOR_GRAY2BGR);//必须转换为3通道,否则相加则错误
+	dst += src;
+	cv::imshow(winTitle, dst);
+
 	cv::waitKey(0);
-	//颜色分离
-	for (int i{ 0 }; i != 3; ++i) {
-		vector<cv::Mat>mv;//分离出来的盛放容器
-		cv::split(src, mv);//通道分离,结果独立
-		mv[i] = cv::Scalar{ 0 };//依次去除BGR通道
-		cv::Mat des;
-		cv::merge(mv, des);
-		cv::imshow(winTitle, des);
-		cv::waitKey(0);
-	}
 }
