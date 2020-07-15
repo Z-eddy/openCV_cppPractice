@@ -1,30 +1,45 @@
 ﻿#include<string>
-#include"opencv2/opencv.hpp"
+#include<iostream>
+#include<vector>
+#include "opencv2/opencv.hpp"
+using std::vector;
 using std::string;
+using std::cout;
+using std::endl;
+using std::ends;
 
 int main()
 {
-	cv::Mat src{ cv::imread("G:/Practice/openCV/images/TinyGreen.PNG") };
+	auto src{ cv::imread("images/dog.jpg") };
 	if (src.empty()) {
-		return 0;
+		cout << "文件空" << endl;
 	}
-	string winTitle{ "dogPic" };
+	string winTitle{ "dogImg" };
 	cv::namedWindow(winTitle, cv::WINDOW_AUTOSIZE);
 	cv::imshow(winTitle, src);
-
-	cv::Mat dst{ cv::Mat::zeros(src.size(),src.type()) };
-	cv::cvtColor(src, dst, cv::COLOR_BGR2YUV);//YUV
-	cv::imshow("YUV", dst);
-	cv::cvtColor(src, dst, cv::COLOR_BGR2YCrCb);//YCrCb
-	cv::imshow("YCrCb", dst);
-	cv::cvtColor(src, dst, cv::COLOR_BGR2HSV);//转成HSV图片
-	cv::imshow("HSV", dst);
-
-	cv::Scalar tMin{ 26,43,46 }, tMax{ 77,255,255 };//范围内为白色,范围外黑色
-	cv::inRange(dst, tMin, tMax, dst);
-	cv::cvtColor(dst, dst, cv::COLOR_GRAY2BGR);//必须转换为3通道,否则相加则错误
-	dst += src;
-	cv::imshow(winTitle, dst);
-
 	cv::waitKey(0);
+
+	/* Mat类型的时候,访问通过at来进行二维数组
+	cv::Mat means, stdDev;
+	cv::meanStdDev(src, means, stdDev);
+	cout << "blue:" << ends << "means: " << means.at<double>(0, 0) << ends << "standard deviation: " << stdDev.at<double>(0, 0) << endl;
+	cout << "green:" << ends << "means: " << means.at<double>(1, 0) << ends << "standard deviation: " << stdDev.at<double>(1, 0) << endl;
+	cout << "red:" << ends << "means: " << means.at<double>(2, 0) << ends << "standard deviation: " << stdDev.at<double>(2, 0) << endl;
+	*/
+	//Scalar类型直接通过下标
+	cv::Scalar means, stdDev;
+	cv::meanStdDev(src, means, stdDev);
+	cout << "blue:" << ends << "means: " << means[0] << ends << "standard deviation: " << stdDev[0] << endl;
+	cout << "green:" << ends << "means: " << means[1] << ends << "standard deviation: " << stdDev[1] << endl;
+	cout << "red:" << ends << "means: " << means[2] << ends << "standard deviation: " << stdDev[2] << endl;
+
+	vector<cv::Mat>m;
+	cv::split(src, m);
+	auto src1{ m[0] };//蓝色通道的值表示的灰度
+	cv::imshow(winTitle, src1);
+	cv::waitKey(0);
+	double minV{ -1 }, maxV{ -1 };
+	cv::Point minP{ -1,-1 }, maxP{ -1,-1 };
+	cv::minMaxLoc(src1, &minV, &maxV, &minP, &maxP);
+	cout << minV << ends << maxV << ends << minP.x << ',' << minP.y << "\t" << ends << maxP << endl;
 }
