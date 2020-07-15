@@ -42,4 +42,14 @@ int main()
 	cv::Point minP{ -1,-1 }, maxP{ -1,-1 };
 	cv::minMaxLoc(src1, &minV, &maxV, &minP, &maxP);
 	cout << minV << ends << maxV << ends << minP.x << ',' << minP.y << "\t" << ends << maxP << endl;
+
+	auto mean{ cv::mean(src1) };//均值获得
+	auto r{ src1.rows }, col{ src1.cols };
+	auto totalN{ r*col };//连续内存,直接处理所有的
+	auto p{ src1.ptr(0) };
+	for (int i{ 0 }; i != totalN; ++p,++i) {
+		*p = (*p >= mean[0] ? 255 : 0);
+	}
+	cv::imshow(winTitle, src1);
+	cv::waitKey(0);
 }
