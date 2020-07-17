@@ -1,24 +1,30 @@
-﻿#include<iostream>
-#include<string>
-#include<chrono>
-#include<thread>
+﻿#include<string>
+#include<iostream>
 #include "opencv2/opencv.hpp"
-using std::cout;
+using std::string;
 using std::endl;
 using std::ends;
-using std::string;
+using std::cout;
 
 int main()
 {
-	cv::VideoCapture video{ "D:/codeSofts/opencv/opencv/sources/samples/data/vtest.avi" };
-	if (!video.isOpened()) {
-		cout << "打开文件错误" << endl;
+	auto src{ cv::imread("./images/dog.jpg") };
+	if (src.empty()) {
+		cout << "error" << endl;
+		return 0;
 	}
-	cv::Size size(video.get(cv::CAP_PROP_FRAME_WIDTH), video.get(cv::CAP_PROP_FRAME_HEIGHT));//获得帧的宽高
-	auto fps{ video.get(cv::CAP_PROP_FPS) };//帧率
-	cv::VideoWriter writer{ "videoDemo.mp4",cv::CAP_PROP_FOCUS,fps,size };
-	cv::Mat frame;//每一帧
-	while (video.read(frame)) {//读取帧数据
-		writer.write(frame);//写入帧数据
-	}
+	cv::imshow("original", src);
+
+	cv::Mat dst;
+
+	cv::flip(src, dst, 0);
+	cv::imshow("x_flip", dst);
+
+	cv::flip(src, dst, 1);
+	cv::imshow("y_flip", dst);
+
+	cv::flip(src, dst, -1);
+	cv::imshow("xy_flip", dst);
+
+	cv::waitKey(0);
 }
