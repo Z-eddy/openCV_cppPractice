@@ -10,18 +10,15 @@ using std::string;
 
 int main()
 {
-	cv::VideoCapture v{ 0 };//使用摄像头
-	if (!v.isOpened()) {
-		cout << "摄像头无法打开" << endl;
+	cv::VideoCapture video{ "D:/codeSofts/opencv/opencv/sources/samples/data/vtest.avi" };
+	if (!video.isOpened()) {
+		cout << "打开文件错误" << endl;
 	}
-	cv::Mat frame;
-	string winTitle{ "cameraDemo" };
-	cv::namedWindow(winTitle, cv::WINDOW_AUTOSIZE);
-	while (v.read(frame)) {
-		cv::imshow(winTitle, frame);
-		auto keyVal{ cv::waitKey(16) };
-		if (keyVal == 27) {//退出键则退出
-			break;
-		}
+	cv::Size size(video.get(cv::CAP_PROP_FRAME_WIDTH), video.get(cv::CAP_PROP_FRAME_HEIGHT));//获得帧的宽高
+	auto fps{ video.get(cv::CAP_PROP_FPS) };//帧率
+	cv::VideoWriter writer{ "videoDemo.mp4",cv::CAP_PROP_FOCUS,fps,size };
+	cv::Mat frame;//每一帧
+	while (video.read(frame)) {//读取帧数据
+		writer.write(frame);//写入帧数据
 	}
 }
