@@ -1,5 +1,5 @@
-﻿#include<string>
-#include<iostream>
+﻿#include<iostream>
+#include<string>
 #include<vector>
 #include "opencv2/opencv.hpp"
 using std::vector;
@@ -10,46 +10,38 @@ using std::ends;
 
 int main()
 {
-	auto src{ cv::imread("images/dog.jpg") };
-	if (src.empty()) {
-		cout << "文件空" << endl;
-	}
-	string winTitle{ "dogImg" };
+	auto src{ cv::imread("./images/dog.jpg") };
+	string winTitle{ "imgShow" };
 	cv::namedWindow(winTitle, cv::WINDOW_AUTOSIZE);
+	//原图显示
 	cv::imshow(winTitle, src);
 	cv::waitKey(0);
 
-	/* Mat类型的时候,访问通过at来进行二维数组
-	cv::Mat means, stdDev;
-	cv::meanStdDev(src, means, stdDev);
-	cout << "blue:" << ends << "means: " << means.at<double>(0, 0) << ends << "standard deviation: " << stdDev.at<double>(0, 0) << endl;
-	cout << "green:" << ends << "means: " << means.at<double>(1, 0) << ends << "standard deviation: " << stdDev.at<double>(1, 0) << endl;
-	cout << "red:" << ends << "means: " << means.at<double>(2, 0) << ends << "standard deviation: " << stdDev.at<double>(2, 0) << endl;
-	*/
-	//Scalar类型直接通过下标
-	cv::Scalar means, stdDev;
-	cv::meanStdDev(src, means, stdDev);
-	cout << "blue:" << ends << "means: " << means[0] << ends << "standard deviation: " << stdDev[0] << endl;
-	cout << "green:" << ends << "means: " << means[1] << ends << "standard deviation: " << stdDev[1] << endl;
-	cout << "red:" << ends << "means: " << means[2] << ends << "standard deviation: " << stdDev[2] << endl;
+	//灰度图转换
+	cv::cvtColor(src, src, cv::COLOR_BGR2GRAY);//此时只有1个通道
+	src.convertTo(src, CV_32F);
 
-	vector<cv::Mat>m;
-	cv::split(src, m);
-	auto src1{ m[0] };//蓝色通道的值表示的灰度
-	cv::imshow(winTitle, src1);
-	cv::waitKey(0);
-	double minV{ -1 }, maxV{ -1 };
-	cv::Point minP{ -1,-1 }, maxP{ -1,-1 };
-	cv::minMaxLoc(src1, &minV, &maxV, &minP, &maxP);
-	cout << minV << ends << maxV << ends << minP.x << ',' << minP.y << "\t" << ends << maxP << endl;
+	cv::Mat dst{ cv::Mat::zeros(src.size(),CV_32FC1) };
+	//MINMAX归一化
+	cv::normalize(src, dst, 1, 0, cv::NORM_MINMAX);
+	dst *= 255;//此数值是估计的,过大则曝光强烈,否则黯淡
+	dst.convertTo(dst, CV_8UC1);
+	cv::imshow("MINMAX", dst);
+	//INF归一化
+	cv::normalize(src, dst, 1, 0, cv::NORM_INF);
+	dst *= 255;
+	dst.convertTo(dst, CV_8UC1);
+	cv::imshow("INF", dst);
+	//L1归一化
+	cv::normalize(src, dst, 1, 0, cv::NORM_L1);
+	dst *= 10000000;
+	dst.convertTo(dst, CV_8UC1);
+	cv::imshow("L1", dst);
+	//L2归一化
+	cv::normalize(src, dst, 1, 0, cv::NORM_L2);
+	dst *= 10000;
+	dst.convertTo(dst, CV_8UC1);
+	cv::imshow("L2", dst);
 
-	auto mean{ cv::mean(src1) };//均值获得
-	auto r{ src1.rows }, col{ src1.cols };
-	auto totalN{ r*col };//连续内存,直接处理所有的
-	auto p{ src1.ptr(0) };
-	for (int i{ 0 }; i != totalN; ++p,++i) {
-		*p = (*p >= mean[0] ? 255 : 0);
-	}
-	cv::imshow(winTitle, src1);
 	cv::waitKey(0);
 }
