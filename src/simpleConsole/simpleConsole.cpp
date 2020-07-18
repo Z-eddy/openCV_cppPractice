@@ -1,33 +1,10 @@
-﻿#include<iostream>
-#include<string>
-#include "opencv2/opencv.hpp"
-using std::endl;
-using std::ends;
-using std::cout;
-using std::string;
+﻿#include "opencv2/opencv.hpp"
 
 int main()
 {
-	auto src{ cv::imread("images/dog.jpg") };
-	if (src.empty()) {
-		cout << "can't open file" << endl;
-	}
-	cv::imshow("original", src);
-
-	cv::Mat dst;
-	cv::Size size(src.rows * 0.5, src.cols * 0.5);
-
-	cv::resize(src, dst, { 0,0 }, 2, 2, cv::INTER_NEAREST);//Size为0时看后面的缩放比
-	cv::imshow("NEARST", dst);
-
-	cv::resize(src, dst, size, 0, 0, cv::INTER_LINEAR);
-	cv::imshow("LINEAR", dst);
-
-	cv::resize(src, dst, size, 0, 0, cv::INTER_CUBIC);
-	cv::imshow("CUBIC", dst);
-
-	cv::resize(src, dst, size, 0, 0, cv::INTER_LANCZOS4);
-	cv::imshow("LANCZONS", dst);
-
+	cv::Mat dst{ cv::Mat::zeros({ 400,400 }, CV_8UC3) };//绘画容器
+	cv::line(dst, { 100,100 }, { 200,200 }, { 255,0,0 }, 1);
+	cv::rectangle(dst, cv::Rect{ {200,200},cv::Point{300,300} }, { 0,0,255 }, -1, cv::LINE_AA);//AA为抗锯齿
+	cv::imshow("test", dst);
 	cv::waitKey(0);
 }
