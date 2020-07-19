@@ -1,10 +1,24 @@
-﻿#include "opencv2/opencv.hpp"
+﻿#include<string>
+#include<vector>
+#include "opencv2/opencv.hpp"
+using std::string;
+using std::vector;
 
 int main()
 {
-	cv::Mat dst{ cv::Mat::zeros({ 400,400 }, CV_8UC3) };//绘画容器
-	cv::line(dst, { 100,100 }, { 200,200 }, { 255,0,0 }, 1);
-	cv::rectangle(dst, cv::Rect{ {200,200},cv::Point{300,300} }, { 0,0,255 }, -1, cv::LINE_AA);//AA为抗锯齿
-	cv::imshow("test", dst);
+	cv::Mat src{ cv::imread("images/dog.jpg") };
+	cv::Rect rect{ cv::Point{100,200},cv::Size{200,200} };
+	cv::Mat roi{ src(rect) };
+	//roi.setTo(cv::Scalar{ 255,0,0 });//三通道颜色更改,也可以直接roi=Scalar{255,0,0}
+	//改变roi颜色
+	for (int i{ 0 }; i != roi.rows; ++i) {
+		auto p{ roi.ptr(i) };//行指针
+		for (int j{ 0 }; j != roi.cols; ++j) {
+			p[0] = 0;
+			p += 3;
+		}
+	}
+	cv::imshow("original", src);
+	cv::imshow("roiToB255",roi);
 	cv::waitKey(0);
 }
