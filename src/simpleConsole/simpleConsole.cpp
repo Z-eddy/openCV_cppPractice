@@ -1,24 +1,27 @@
 ﻿#include<string>
 #include<vector>
+#include<iostream>
 #include "opencv2/opencv.hpp"
+using std::cout;
+using std::endl;
+using std::ends;
 using std::string;
 using std::vector;
 
 int main()
 {
-	cv::Mat src{ cv::imread("images/dog.jpg") };
-	cv::Rect rect{ cv::Point{100,200},cv::Size{200,200} };
-	cv::Mat roi{ src(rect) };
-	//roi.setTo(cv::Scalar{ 255,0,0 });//三通道颜色更改,也可以直接roi=Scalar{255,0,0}
-	//改变roi颜色
-	for (int i{ 0 }; i != roi.rows; ++i) {
-		auto p{ roi.ptr(i) };//行指针
-		for (int j{ 0 }; j != roi.cols; ++j) {
-			p[0] = 0;
-			p += 3;
-		}
-	}
-	cv::imshow("original", src);
-	cv::imshow("roiToB255",roi);
+	cv::Mat src{ cv::imread("G:/Practice/openCV/images/TinyGreen.PNG") };
+	cv::Mat dst;
+	cv::cvtColor(src, dst, cv::COLOR_BGR2HSV);//先转换hsv图
+	cv::Mat mask;
+	cv::inRange(dst, cv::Scalar{ 36,43,46 }, cv::Scalar{ 99,255,255 }, mask);//获得mssk掩膜
+	cv::bitwise_not(mask, mask);//反转mask,人白背景黑,人255,背景0
+	cv::imshow("mask", mask);//显示mask
+	cv::Mat person;
+	cv::Mat temp{ cv::Mat::zeros(src.size(),src.type()) };
+	temp.setTo(cv::Scalar{ 255,255,255 });
+	cv::bitwise_and(src,temp, person, mask);//按照mask有效区内,src与temp做and计算
+	cv::imshow("result", person);
+
 	cv::waitKey(0);
 }
