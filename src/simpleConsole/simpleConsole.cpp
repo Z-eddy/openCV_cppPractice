@@ -37,12 +37,13 @@ int main()
 	int hist_w{ 512 };
 	int hist_h{ 400 };
 	auto dst{ cv::Mat{hist_h,hist_w,CV_8UC3,cv::Scalar{255,255,255}} };//画布800*600,白色
+	//归一化防止结果值超过了像素的上限,例如8000比400大
 	cv::normalize(bHist, bHist, 0,hist_h, cv::NORM_MINMAX);
 	cv::normalize(gHist, gHist, 0,hist_h, cv::NORM_MINMAX);
 	cv::normalize(rHist, rHist, 0,hist_h, cv::NORM_MINMAX);
 	auto step{cvRound(hist_w/ 256) };//四舍五入计算,两点之间的间隔
 	for (int i = 1; i != 256; ++i) {
-		//搞不懂为何要 hist_h -
+		//hist_h - 是因为图像的坐标是y向下增长,我们希望的是向上增长表示我们的值,所以用htst_h y轴上限减,得到我们想要的增长方向
 		line(dst, cv::Point{ (i - 1)*step, hist_h - cvRound(bHist.at<float>(i - 1)) },
 			cv::Point{ (i)*step, hist_h - cvRound(bHist.at<float>(i)) }, cv::Scalar{ 255,0,0 }, 1);
 		line(dst, cv::Point{ (i - 1)*step,hist_h - cvRound(gHist.at<float>(i - 1)) },
