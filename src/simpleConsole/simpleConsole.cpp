@@ -10,14 +10,26 @@ using std::vector;
 
 int main()
 {
-	cv::Mat src{ cv::imread("G:/Practice/openCV/images/TinyGreen.PNG") };
-	cv::Mat hsv;
-	cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);//先转换hsv图
-	cv::Mat origiMask;//掩膜
-	cv::inRange(hsv, cv::Scalar{ 36,43,46 }, cv::Scalar{ 99,255,255 }, origiMask);//获得掩膜,人黑背景白
-	
-	cv::Mat blue{ cv::Mat{cv::Mat::zeros(src.size(),src.type())}.setTo(cv::Scalar{255,0,0}) };//蓝色背景
-	cv::bitwise_and(blue, blue,src, origiMask);//origiMask的有效区(背景区)内,blue与blue做and计算后,替换src中对应的像素
-	cv::imshow("bluePerson",src);
+	auto src{ cv::imread("./images/dog.jpg") };
+	cv::imshow("original", src);
+	vector<cv::Mat>channels;
+	cv::split(src, channels);
+
+	cv::Mat bHist,gHist,rHist;
+	//inputArr,输入的通道数,mask,outputArr,柱个数,每个柱取值范围
+	vector<int>channelN{ 0 };
+	vector<int>hitSize{ 256 };
+	vector<float>ranges{ 0,255 };
+	vector<cv::Mat>bSrc{ channels[0] }, gSrc{ channels[1] }, rSrc{ channels[2] };
+	vector<cv::Mat>outArrays;
+	cv::calcHist(bSrc, channelN, cv::Mat{}, bHist, hitSize, ranges);//计算b通道直方图
+	cv::calcHist(gSrc, channelN, cv::Mat{}, gHist, hitSize, ranges);//计算g通道直方图
+	cv::calcHist(rSrc, channelN, cv::Mat{}, rHist, hitSize, ranges);//计算r通道直方图
+
+	cout << bHist.type() << endl;
+
+	//画布,rows=600,columns=800
+	cv::Mat dst{ 600,800,CV_8UC3,cv::Scalar{255,255,255} };
+
 	cv::waitKey(0);
 }
