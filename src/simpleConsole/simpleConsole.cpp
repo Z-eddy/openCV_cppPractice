@@ -1,39 +1,23 @@
 ﻿#include<iostream>
-#include<string>
 #include<vector>
+#include<string>
 #include "opencv2/opencv.hpp"
+using std::cout;
 using std::endl;
 using std::ends;
-using std::cout;
-using std::cerr;
-using std::string;
 using std::vector;
+using std::string;
 
 int main()
 {
-	cv::Mat src{ cv::imread("images/dog.jpg") };
-	cv::imshow("original", src);
-	cout << src.type() << endl;
-
-	//分离并计算直方图y数据
+	auto src{ cv::imread("images/dog.jpg") };
 	vector<cv::Mat>chnls;
+	cv::imshow("original", src);
 	cv::split(src, chnls);
-	//归一化后在画布上可视化呈现
-	int rows{ 600 }, cols{ 800 };
-	cv::Mat dst{ rows,cols,CV_8UC3,cv::Scalar{255,255,255} };//画布
-	auto step{ cvRound(cols*1.0 / 256) };
-	//绘制直方图
-	cv::Mat hist;
-	vector<cv::Scalar>vColor{ {255,0,0},{0,255,0},{0,0,255} };//颜色集
-	for (int i{ 0 }; i != chnls.size(); ++i) {//对于每个通道
-		cv::calcHist(chnls, { i }, cv::Mat{}, hist, { 256 }, { 0,255 });//计算通道的直方图
-		cv::normalize(hist, hist, 0, rows, cv::NORM_MINMAX);//归一化直方图的值
-		for (int j{ 1 }; j != 256; ++j) {//绘制折线,必须用rows-，因为y轴像素是负增长
-			cv::line(dst, { (j - 1)*step,cvRound(rows - hist.at<float>(j - 1)) }, { j*step ,cvRound(rows - hist.at<float>(j)) }, vColor.at(i), 2);
-		}
+	for (auto item : chnls) {
+		cv::equalizeHist(item, item);
 	}
-
-	cv::imshow("dst", dst);
-
+	cv::merge(chnls, src);
+	cv::imshow("equalizeHist", src);
 	cv::waitKey(0);
 }
