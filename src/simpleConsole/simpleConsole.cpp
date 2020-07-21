@@ -1,57 +1,43 @@
-﻿/**/
-#include<iostream>
+﻿#include<iostream>
 #include<string>
 #include<vector>
-#include<map>
 #include "opencv2/opencv.hpp"
-using std::map;
-using std::cerr;
-using std::cout;
 using std::endl;
 using std::ends;
+using std::cout;
+using std::cerr;
 using std::string;
 using std::vector;
 
 int main()
 {
-	string fileName{ "./images/dog.jpg" };
-	cv::Mat src{ cv::imread(fileName) };
+	cv::Mat src{ cv::imread("images/dog.jpg") };
 	cv::imshow("original", src);
+	cout << src.type() << endl;
 
-	vector<cv::Mat>chns;
-	cv::split(src, chns);
-	vector<cv::Mat>bChn{ chns[0] }, gChn{ chns[1] }, rChn{ chns[2] };
-	cv::Mat bHist, gHist, rHist;//获得直方图数据,256一维数组
+	//分离并计算直方图y数据
+	vector<cv::Mat>chnls;
+	cv::split(src, chnls);
+	vector<cv::Mat> bChn{ chnls[0] }, gChn{ chnls[1] }, rChn{ chnls[2] };
+	cv::Mat bHist, gHist, rHist;
 	cv::calcHist(bChn, { 0 }, cv::Mat{}, bHist, { 256 }, { 0,255 });
 	cv::calcHist(gChn, { 0 }, cv::Mat{}, gHist, { 256 }, { 0,255 });
 	cv::calcHist(rChn, { 0 }, cv::Mat{}, rHist, { 256 }, { 0,255 });
 
-	// 手工计数,和算法一致
-	//auto p{ chns.at(0).ptr(0) };
-	//auto tempSize{ chns.at(0).rows*chns.at(0).cols };
-	//map<int, int>tempMap;
-	//for (int i{ 0 }; i != tempSize; ++p, ++i) {
-		//++tempMap[*p];
-	//}
-
-	int hist_w{ 512 };
-	int hist_h{ 400 };
-	auto dst{ cv::Mat{hist_h,hist_w,CV_8UC3,cv::Scalar{255,255,255}} };//画布800*600,白色
-	//归一化防止结果值超过了像素的上限,例如8000比400大
-	cv::normalize(bHist, bHist, 0,hist_h, cv::NORM_MINMAX);
-	cv::normalize(gHist, gHist, 0,hist_h, cv::NORM_MINMAX);
-	cv::normalize(rHist, rHist, 0,hist_h, cv::NORM_MINMAX);
-	auto step{cvRound(hist_w/ 256) };//四舍五入计算,两点之间的间隔
-	for (int i = 1; i != 256; ++i) {
-		//hist_h - 是因为图像的坐标是y向下增长,我们希望的是向上增长表示我们的值,所以用htst_h y轴上限减,得到我们想要的增长方向
-		line(dst, cv::Point{ (i - 1)*step, hist_h - cvRound(bHist.at<float>(i - 1)) },
-			cv::Point{ (i)*step, hist_h - cvRound(bHist.at<float>(i)) }, cv::Scalar{ 255,0,0 }, 1);
-		line(dst, cv::Point{ (i - 1)*step,hist_h - cvRound(gHist.at<float>(i - 1)) },
-			cv::Point{ (i)*step,hist_h - cvRound(gHist.at<float>(i)) }, cv::Scalar{ 0,255,0 }, 1);
-		line(dst, cv::Point{ (i - 1)*step,hist_h - cvRound(rHist.at<float>(i - 1)) },
-			cv::Point{ (i)*step,hist_h - cvRound(rHist.at<float>(i)) }, cv::Scalar{ 0,0,255 }, 1);
+	//归一化后在画布上可视化呈现
+	int rows{ 600 }, cols{ 800 };
+	cv::Mat dst{ rows,cols,CV_8UC3,cv::Scalar{255,255,255} };//画布
+	//不归一化就难以在图上显示完全(计数8000时,严重超过rows的像素)
+	cv::normalize(bHist, bHist, 0, rows, cv::NORM_MINMAX);
+	cv::normalize(gHist, gHist, 0, rows, cv::NORM_MINMAX);
+	cv::normalize(rHist, rHist, 0, rows, cv::NORM_MINMAX);
+	auto step{ cvRound(cols*1.0 / 256) };
+	for (int i{ 1 }; i != 256; ++i) {//必须用rows-，因为y轴像素是负增长
+		cv::line(dst, { (i - 1)*step,cvRound(rows - bHist.at<float>(i - 1)) }, { i*step ,cvRound(rows - bHist.at<float>(i)) }, cv::Scalar{ 255,0,0 }, 2);
+		cv::line(dst, { (i - 1)*step,cvRound(rows - gHist.at<float>(i - 1)) }, { i*step ,cvRound(rows - gHist.at<float>(i)) }, cv::Scalar{ 0,255,0 }, 2);
+		cv::line(dst, { (i - 1)*step,cvRound(rows - rHist.at<float>(i - 1)) }, { i*step ,cvRound(rows - rHist.at<float>(i)) }, cv::Scalar{ 0,0,255 }, 2);
 	}
-	cv::imshow("result", dst);
+	cv::imshow("dst", dst);
 
 	cv::waitKey(0);
 }
