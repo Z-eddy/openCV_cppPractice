@@ -2,21 +2,14 @@
 
 int main()
 {
-	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
-	if (src.empty()) {
-		return 0;
-	}
+	auto srcM{ cv::imread("images/dog.jpg") };
+	cv::UMat src;
+	srcM.copyTo(src);
 	cv::imshow("original", src);
-	/*
-	fastNlMeansDenoising(
-		src // 输入图像
-		dst = None, // 输出结果
-		h = None, // h值越大表示去噪声力度越大，同时细节丢失也越多，默认10即可。
-		templateWindowSize = None, // 相似性权重计算窗口大小，一般为5～15之间
-		searchWindowSize = None// 搜索窗口，大小可以设置为相似性计算窗口大小的3～5倍即可。
-	)
-	*/
-	cv::fastNlMeansDenoisingColored(src,src,3,3,7,21);
-	cv::imshow("非局部均值去噪",src);
+	cv::waitKey(0);
+	cv::UMat dst;
+	//0表示图片大小为自身,180是过滤的边缘颜色差,5是高斯的西格玛参数,越大参与运算的像素越多、运算越慢
+	cv::bilateralFilter(src, dst, 0, 180, 5);
+	cv::imshow("bilateralFilter",dst);
 	cv::waitKey(0);
 }
