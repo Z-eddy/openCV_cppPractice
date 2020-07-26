@@ -2,14 +2,11 @@
 
 int main()
 {
-	auto srcM{ cv::imread("images/dog.jpg") };
-	cv::UMat src;
-	srcM.copyTo(src);
+	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW)};
 	cv::imshow("original", src);
-	cv::waitKey(0);
-	cv::UMat dst;
-	//0表示图片大小为自身,180是过滤的边缘颜色差,5是高斯的西格玛参数,越大参与运算的像素越多、运算越慢
-	cv::bilateralFilter(src, dst, 0, 180, 5);
-	cv::imshow("bilateralFilter",dst);
+	//pyramid金字塔
+	//src,dst,空间窗口半径,颜色窗口半径,最大金字塔分割,最大停止条件(最多移动5次,RGB颜色差<1)
+	cv::pyrMeanShiftFiltering(src, src, 10, 15, 1, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 5, 1));
+	cv::imshow("pyrMeanShiftFilter", src);
 	cv::waitKey(0);
 }
