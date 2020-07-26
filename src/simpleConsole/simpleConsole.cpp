@@ -1,12 +1,16 @@
 ﻿#include "opencv2/opencv.hpp"
+#include<iostream>
+using std::cout;
 
 int main()
 {
-	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW)};
-	cv::imshow("original", src);
-	//pyramid金字塔
-	//src,dst,空间窗口半径,颜色窗口半径,最大金字塔分割,最大停止条件(最多移动5次,RGB颜色差<1)
-	cv::pyrMeanShiftFiltering(src, src, 10, 15, 1, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 5, 1));
-	cv::imshow("pyrMeanShiftFilter", src);
+	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
+	cv::UMat sumMat;
+	cv::integral(src, sumMat);//计算积分
+	auto nums{ sumMat(cv::Rect{ {10,10},cv::Size{10,10} }) };
+	auto ve{ nums.getMat(cv::ACCESS_RW).at<cv::Vec3i>(5, 5) };
+	for (int i{ 0 }; i != ve.channels; ++i) {
+		cout << ve[i] << '\n';
+	}
 	cv::waitKey(0);
 }
