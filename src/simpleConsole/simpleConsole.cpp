@@ -4,13 +4,11 @@ using std::cout;
 
 int main()
 {
-	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
-	cv::UMat sumMat;
-	cv::integral(src, sumMat);//计算积分
-	auto nums{ sumMat(cv::Rect{ {10,10},cv::Size{10,10} }) };
-	auto ve{ nums.getMat(cv::ACCESS_RW).at<cv::Vec3i>(5, 5) };
-	for (int i{ 0 }; i != ve.channels; ++i) {
-		cout << ve[i] << '\n';
-	}
+	auto src{ cv::imread("E:/openCV/opencv_tutorial/data/images/example.png").getUMat(cv::ACCESS_RW) };
+	cv::imshow("original", src);
+	cv::UMat dst;
+	//src,dst,边缘保留滤波算法类型,空间sigma 0~200,颜色sigma 0~1.0
+	cv::edgePreservingFilter(src,dst,1,60,0.4);
+	cv::imshow("edgePreservingFilter",dst);
 	cv::waitKey(0);
 }
