@@ -1,36 +1,22 @@
-﻿#include "opencv2/opencv.hpp"
-#include<string>
-#include<iostream>
-#include<vector>
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
-using std::ends;
+﻿#include"opencv2/opencv.hpp"
 
 int main()
 {
 	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
-	cv::imshow("original", src);
-	//算子0
-	cv::Mat kernel0{ cv::Mat::ones({5,5},CV_32F) / 25.0 };//算子cpu初始化
-	cv::UMat dst;
-	cv::filter2D(src, dst, -1, kernel0);//gpuz中处理
-	cv::imshow("kernel0", dst);
-	//算子1,3*3矩阵
-	cv::Mat kernel1{ { 3,3 },//C++11的初始化
-		{ 0,-1,0,
-		-1,5,-1,
-		0,-1,0 }
-	};
-	cv::filter2D(src, dst, -1, kernel1);
-	cv::imshow("kernel1", dst);
-	//算子2,2*2矩阵
-	cv::Mat kernel2{ (cv::Mat_<int>(2,2) << 1,0,0,-1) };//原始的初始化
-	cv::filter2D(src, dst, CV_32F, kernel2);
-	cv::UMat dstTemp;
-	cv::convertScaleAbs(dst, dstTemp);
-	cv::imshow("kernel2", dstTemp);
+	cv::UMat xDerivation, yDerivation;
+	//src,dst,图像深度(1表示和原图一样,防止溢出手动指定CV_32F),x方向求导,y方向求导,窗口大小,放缩比例,补偿(偏移值,在结果上增加),图像边缘处理方式
+	cv::Sobel(src, xDerivation, CV_32F, 1, 0, 3, 1, 0, 4);
+	cv::Sobel(src, yDerivation, CV_32F, 0, 1);
+	cv::UMat xDst, yDst;
+	cv::convertScaleAbs(xDerivation,xDst);//归一化到255
+	cv::convertScaleAbs(yDerivation,yDst);
+	cv::imshow("x",xDst);
+	cv::imshow("y",yDst);
+	//合并x\y
+	cv::UMat dst0,dst1;
+	cv::add(xDst, yDst, dst0, cv::UMat(), CV_16S);
+	cv::convertScaleAbs(dst0, dst1);
+	cv::imshow("dst", dst1);
 
 	cv::waitKey(0);
 }
