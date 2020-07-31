@@ -3,20 +3,36 @@
 int main()
 {
 	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
-	cv::UMat xDerivation, yDerivation;
-	//src,dst,图像深度(1表示和原图一样,防止溢出手动指定CV_32F),x方向求导,y方向求导,窗口大小,放缩比例,补偿(偏移值,在结果上增加),图像边缘处理方式
-	cv::Sobel(src, xDerivation, CV_32F, 1, 0, 3, 1, 0, 4);
-	cv::Sobel(src, yDerivation, CV_32F, 0, 1);
-	cv::UMat xDst, yDst;
-	cv::convertScaleAbs(xDerivation,xDst);//归一化到255
-	cv::convertScaleAbs(yDerivation,yDst);
-	cv::imshow("x",xDst);
-	cv::imshow("y",yDst);
-	//合并x\y
-	cv::UMat dst0,dst1;
-	cv::add(xDst, yDst, dst0, cv::UMat(), CV_16S);
-	cv::convertScaleAbs(dst0, dst1);
-	cv::imshow("dst", dst1);
+	cv::UMat dstTemp, dst;
+
+	//robert x方向算子??y??
+	cv::Mat robert_x{ {2,2},{1,0,0,-1} };
+	cv::filter2D(src, dstTemp, CV_16S, robert_x);
+	cv::convertScaleAbs(dstTemp, dst);
+	cv::imshow("robert_x", dst);
+	//robert y方向算子??x??
+	cv::Mat robert_y{ {2,2},{0,-1,1,0} };
+	cv::filter2D(src, dstTemp, CV_16S, robert_y);
+	cv::convertScaleAbs(dstTemp, dst);
+	cv::imshow("robert_y", dst);
+	//prewitt x方向算子
+	cv::Mat prewitt_x{ {3,3},
+		{ -1,0,1,
+		-1,0,1,
+		-1,0,1 }
+	};
+	cv::filter2D(src, dstTemp, CV_32F, prewitt_x);
+	cv::convertScaleAbs(dstTemp, dst);
+	cv::imshow("prewittX", dst);
+	//prewitt y方向算子
+	cv::Mat prewitt_y{ {3,3},
+		{-1,-1,-1,
+		0,0,0,
+		1,1,1 }
+	};
+	cv::filter2D(src, dstTemp, CV_32F, prewitt_y);
+	cv::convertScaleAbs(dstTemp, dst);
+	cv::imshow("prewittY", dst);
 
 	cv::waitKey(0);
 }
