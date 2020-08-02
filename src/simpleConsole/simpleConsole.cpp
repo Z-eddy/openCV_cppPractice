@@ -1,12 +1,15 @@
 ﻿#include "opencv2/opencv.hpp"
+#include<vector>
+using std::vector;
 
 int main()
 {
 	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
 	cv::imshow("original", src);
 	cv::Mat sharpenAlgorithm{ {3,3},\
+		std::initializer_list<float>
 		{ 0, -1, 0,
-		-1, 5, -1,//拉普拉斯算子是4,然后越大则越接近原图效果(原图权重像素占比越大)
+		-1, 4.5, -1,//拉普拉斯算子是4,然后越大则越接近原图效果(原图权重像素占比越大)
 		0, -1, 0 }
 	};
 	cv::UMat dstTemp,dst;
