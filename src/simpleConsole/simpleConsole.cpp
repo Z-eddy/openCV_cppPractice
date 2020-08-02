@@ -1,18 +1,18 @@
 ﻿#include "opencv2/opencv.hpp"
+
 int main()
 {
 	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
-	cv::UMat tempGauss, tempDst, dst;
-	//ksize为1指4领域,必须为奇数,如果为其他非1奇数则是8邻域
-	if (true) {
-		cv::GaussianBlur(src, tempGauss, { 3,3 }, 0);
-		cv::Laplacian(tempGauss, tempDst, CV_32F, 1, 1, 150);
-	}
-	else {
-		cv::Laplacian(src, tempDst, CV_32F, 1, 1, 150);
-	}
-	cv::convertScaleAbs(tempDst, dst);
-	cv::imshow("Laplacian", dst);
+	cv::imshow("original", src);
+	cv::Mat sharpenAlgorithm{ {3,3},\
+		{ 0, -1, 0,
+		-1, 5, -1,//拉普拉斯算子是4,然后越大则越接近原图效果(原图权重像素占比越大)
+		0, -1, 0 }
+	};
+	cv::UMat dstTemp,dst;
+	cv::filter2D(src, dstTemp, CV_32F, sharpenAlgorithm);
+	cv::convertScaleAbs(dstTemp, dst);
+	cv::imshow("sharpen", dst);
 
 	cv::waitKey(0);
 }
