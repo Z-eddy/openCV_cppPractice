@@ -6,6 +6,7 @@ int main()
 	cv::imshow("original", src);
 	cv::UMat gaussian,dst;
 	cv::GaussianBlur(src, gaussian, { 0,0 }, 25);
+	//gamma是修正值,每个像素都会叠加的值
 	cv::addWeighted(src, 1.5, gaussian, -0.5, 0, dst);//权重叠加,src*1.5-0.5*gaussian
 	cv::imshow("USM", dst);
 
