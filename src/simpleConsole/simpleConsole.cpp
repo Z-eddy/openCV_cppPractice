@@ -3,12 +3,9 @@
 int main()
 {
 	auto src{ cv::imread("images/dog.jpg").getUMat(cv::ACCESS_RW) };
-	cv::imshow("original", src);
-	cv::UMat gaussian,dst;
-	cv::GaussianBlur(src, gaussian, { 0,0 }, 25);
-	//gamma是修正值,每个像素都会叠加的值
-	cv::addWeighted(src, 1.5, gaussian, -0.5, 0, dst);//权重叠加,src*1.5-0.5*gaussian
-	cv::imshow("USM", dst);
+	cv::UMat dst;
+	cv::Canny(src, dst, 80, 240, 3, false);//默认的使用sobel算子计算x/y方向的inputArray,非默认的自己指定xInput,yInput
+	cv::imshow("Canny边缘检测器", dst);
 
 	cv::waitKey(0);
 }
