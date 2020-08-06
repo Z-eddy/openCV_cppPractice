@@ -6,7 +6,8 @@ int main()
 	cv::imshow("original", src);
 	cv::cvtColor(src, src, cv::COLOR_BGR2GRAY);
 	auto row{ src.rows }, col{ src.cols };
-	unsigned char val{ 127 };
+	//unsigned char val{ 127 };
+	unsigned char val= cv::mean(src)[0];
 	for (int i{ 0 }; i != row; ++i) {
 		auto p{ src.ptr(i) };
 		for (int j{ 0 }; j != col; ++p, ++j) {
