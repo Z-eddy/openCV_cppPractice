@@ -1,26 +1,16 @@
-﻿#include "opencv2/opencv.hpp"
-
+﻿#include<iostream>
+#include "opencv2/opencv.hpp"
+using std::cout;
+using std::endl;
+using std::ends;
 int main()
 {
-	auto src{ cv::imread("C:/Users/Zr/Desktop/temp/test.png") };
+	auto src{ cv::imread("images/dog.jpg") };
 	cv::cvtColor(src, src, cv::COLOR_BGR2GRAY);
-
 	cv::Mat dst;
-
-	cv::threshold(src, dst, 127, 255, cv::THRESH_BINARY);//按照127的阈值进行分割,大于为1，小于为0
-	cv::imshow("THRESH_BINARY", dst);
-
-	cv::threshold(src, dst, 127, 255, cv::THRESH_BINARY_INV);//按照127的阈值进行分割,大于为0，小于为1
-	cv::imshow("THRESH_BINARY_INV", dst);
-
-	cv::threshold(src, dst, 127, 255, cv::THRESH_TRUNC);//大于127的都成为127
-	cv::imshow("THRESH_TRUNC", dst);
-
-	cv::threshold(src, dst, 127, 255, cv::THRESH_TOZERO);//小于127的都为0
-	cv::imshow("THRESH_TOZERO", dst);
-
-	cv::threshold(src, dst, 127, 255, cv::THRESH_TOZERO_INV);//大于127的都为0
-	cv::imshow("THRESH_TOZERO_INV", dst);
+	auto v{ cv::threshold(src, dst, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU) };
+	cout << v << endl;
+	cv::imshow("dst", dst);
 
 	cv::waitKey(0);
 }
