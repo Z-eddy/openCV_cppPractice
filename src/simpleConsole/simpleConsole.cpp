@@ -9,11 +9,12 @@ int main()
 	cv::matchTemplate(src, tpl, dst, cv::TM_CCORR_NORMED);
 	cv::imshow("dst", dst);
 
-	auto h{ dst.rows }, w{ dst.cols };//结果的行列
-	for (int i{ 0 }; i != h; ++i) {
-		for (int j{ 0 }; j != w; ++j) {
-			auto v{ dst.at<float>(i,j) };
-			if (v > 0.95) {
+	auto row{ dst.rows }, col{ dst.cols };//结果的行列
+	for (int i{ 0 }; i != row; ++i) {
+		auto p{ dst.ptr<float>(i) };
+		for (int j{ 0 }; j != col; ++j) {
+			//auto v{ dst.at<float>(i,j) };//使用指针效率更高
+			if (*p++ > 0.95) {
 				cv::rectangle(src, cv::Point{ j,i }, cv::Point{ j + tpl.cols,i + tpl.rows}, cv::Scalar{ 0,0,255 }, 1, 8, 0);//框选出匹配图
 			}
 		}
