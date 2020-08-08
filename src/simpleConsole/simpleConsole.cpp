@@ -1,19 +1,14 @@
-﻿#include<iostream>
-#include "opencv2/opencv.hpp"
-using std::endl;
-using std::ends;
-using std::cout;
+﻿#include "opencv2/opencv.hpp"
 
 int main()
 {
 	auto src{ cv::imread("images/dog.jpg") };
-	cv::imshow("original", src);
-	cv::Mat tempSrc;
-	cv::cvtColor(src, tempSrc, cv::COLOR_BGR2GRAY);//转化为灰度图好进行二值化
+	cv::Mat gray;
+	cv::cvtColor(src, gray, cv::COLOR_BGR2GRAY);
 	cv::Mat dst;
-	auto val{ cv::threshold(tempSrc, dst, 0, 255, cv::THRESH_BINARY | cv::THRESH_TRIANGLE) };
-	cout << val << endl;
-	cv::imshow("threshold_triangle", dst);
+	//自适应光照不均与阈值算法,最后两个参数,开窗大小,C一般是10左右,影响过滤效果,低保留的黑色多,越高越少
+	cv::adaptiveThreshold(gray, dst, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 25, 8);
+	cv::imshow("adaptiveThreshold", dst);
 
 	cv::waitKey(0);
 }
