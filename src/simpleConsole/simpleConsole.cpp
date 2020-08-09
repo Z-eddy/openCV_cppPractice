@@ -2,13 +2,34 @@
 
 int main()
 {
-	auto src{ cv::imread("images/dog.jpg") };
-	cv::Mat gray;
-	cv::cvtColor(src, gray, cv::COLOR_BGR2GRAY);
-	cv::Mat dst;
-	//自适应光照不均与阈值算法,最后两个参数,开窗大小,C一般是10左右,影响过滤效果,低保留的黑色多,越高越少
-	cv::adaptiveThreshold(gray, dst, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 25, 8);
-	cv::imshow("adaptiveThreshold", dst);
+	auto src{ cv::imread("E:/practice/openCV/material/images/coins.jpg").getUMat(cv::ACCESS_RW) };
+	cv::imshow("original", src);
+
+	cv::UMat tempDst;
+	int fileter{ 3 };
+	switch (fileter)
+	{
+	case 0://进行均值滤波后二值化
+		cv::blur(src, tempDst, {3,3});
+		break;
+	case 1://进行高斯滤波后二值化
+		cv::GaussianBlur(src, tempDst, { 3,3 }, 0);
+		break;
+	case 2://非局部均值去噪后二值化
+		cv::fastNlMeansDenoisingColored(src, tempDst);
+		break;
+	case 3:
+		cv::pyrMeanShiftFiltering(src, tempDst, 10, 100);
+		break;
+	default:
+		tempDst = src;
+		break;
+	}
+	cv::UMat grayDst;
+	cv::cvtColor(tempDst, grayDst, cv::COLOR_BGR2GRAY);
+	cv::UMat dst;
+	cv::threshold(grayDst, dst, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+	cv::imshow("dst", dst);
 
 	cv::waitKey(0);
 }
