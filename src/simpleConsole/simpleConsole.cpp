@@ -4,28 +4,28 @@ using std::vector;
 
 int main()
 {
-	auto src{ cv::imread("E:/practice/openCV/material/images/stuff.jpg") };
-	cv::imshow("src", src);
+	auto src{ cv::imread("E:/practice/openCV/material/images/zhifang_ball.png") };
 	cv::Mat canny;
-	cv::Canny(src, canny,80,160);
-
+	cv::Canny(src, canny, 100, 200);
+	cv::imshow("canny", canny);
+	cv::Mat dilate;
 	auto k{ cv::getStructuringElement(cv::MORPH_RECT,{3,3}) };
-	cv::Mat theDialate;
-	cv::dilate(canny, theDialate, k);//膨胀,连接断开的边缘
-
-	vector<vector<cv::Point>>contours;
-	cv::findContours(theDialate, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+	cv::dilate(canny, dilate, k);
+	vector<vector<cv::Point>> contours;
+	cv::findContours(dilate, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 	for (int i{ 0 }; i != contours.size(); ++i) {
-		//最小轮廓矩形发现
-		auto routateRect{ cv::minAreaRect(contours.at(i)) };
-		cv::Point2f fourLine[4];
-		routateRect.points(fourLine);
-		for (int i{ 0 }; i != 4; ++i) {
-			cv::line(src, fourLine[i % 4], fourLine[(i + 1) % 4], cv::Scalar{ 0,0,255 });
+		auto area{ cv::contourArea(contours.at(i)) };//计算面积
+		auto length{ cv::arcLength(contours.at(i),true) };//计算弧长
+		if (area < 100 || length < 100) {//如果面积或者弧长<100则忽略
+			continue;
 		}
-		//最大外接矩形发现
-		auto rect{ cv::boundingRect(contours.at(i)) };
-		cv::rectangle(src,rect, cv::Scalar{ 0,0,255 });
+		auto rotateRect{ cv::minAreaRect(contours.at(i)) };
+		cv::Point2f theRect[4];
+		rotateRect.points(theRect);
+		for (int i{ 0 }; i != 4; ++i) {
+			cv::line(src, theRect[i % 4], theRect[(i + 1) % 4], { 0,0,255 });
+		}
+		cv::circle(src, rotateRect.center, 2, { 255,0,0 }, -1);
 	}
 	cv::imshow("dst", src);
 
