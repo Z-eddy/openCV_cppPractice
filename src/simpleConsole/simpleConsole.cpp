@@ -1,58 +1,46 @@
 ﻿#include<vector>
 #include<iostream>
-#include"opencv2/opencv.hpp"
+#include "opencv2/opencv.hpp"
+using std::vector;
 using std::cout;
 using std::ends;
 using std::endl;
-using std::vector;
-using std::min;
-using std::max;
 
+vector<cv::UMat> getContours(cv::UMat arg) {//从原图读取,然后进行轮廓提取
+	if (arg.empty()) {//空的就返回
+		cout << "empty" << endl;
+		return{};
+	}
+	cv::UMat gray,threshold;
+	cv::cvtColor(arg, gray, cv::COLOR_BGR2GRAY);
+	cv::threshold(gray, threshold, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+	vector<cv::UMat> contours;
+	cv::findContours(threshold, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+	return contours;
+}
 int main()
 {
-	auto src{ cv::imread("E:/practice/openCV/material/images/stuff.jpg").getUMat(cv::ACCESS_RW) };
-	cv::imshow("original", src);
-	cv::UMat canny;
-	cv::Canny(src, canny, 80, 160);
-	cv::UMat k{ cv::getStructuringElement(cv::MORPH_RECT,{3,3}).getUMat(cv::ACCESS_RW) };
-	cv::UMat dilate;
-	cv::dilate(canny, dilate, k);
-	vector<cv::UMat> contours;
-	cv::findContours(dilate.getMat(cv::ACCESS_RW), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-	for (auto item : contours) {
-		//获得轮廓的中心
-		auto moment{ cv::moments(item) };
-		int cx = moment.m10 / moment.m00;
-		int cy = moment.m01 / moment.m00;
-		//获得外接矩形的长宽比
-		auto rotateRect{ cv::minAreaRect(item) };
-		vector<cv::Point2f> lines(4);
-		rotateRect.points(&lines[0]);
-		auto w{ rotateRect.size.width };
-		auto h{ rotateRect.size.height };
-		auto ratio{ min(w, h) / max(w,h) };
-		if (ratio > 0.9) {//趋向于正方形
-			cv::circle(src, { cx,cy }, 2, { 255,0,0 }, -1);
-			for (auto beg{ lines.cbegin() }; beg != lines.cend(); ++beg) {//绘制矩形框
-				auto second{ beg + 1 };
-				if (beg == lines.cend() - 1) {//如果当前点是最后一点,则连接到第一点
-					second = lines.cbegin();
-				}
-				cv::line(src, *beg, *second, { 0,0,255 }, 2);
-			}
+	auto src0{ cv::imread("E:/practice/openCV/material/images/abc.png").getUMat(cv::ACCESS_FAST) };
+	auto src1{ cv::imread("E:/practice/openCV/material/images/a5.png").getUMat(cv::ACCESS_FAST) };
+	auto contours0{ getContours(src0) };
+	auto contours1{ getContours(src1) };
+	auto moment{ cv::moments(contours1.at(0)) };//模板的矩
+	cv::UMat huMoment;//模板的胡矩
+	cv::HuMoments(moment, huMoment);
+	int i{ 0 };
+	for (auto item : contours0) {
+		auto theMoment{ cv::moments(item) };
+		cv::UMat theHu;
+		cv::HuMoments(theMoment, theHu);
+		auto v{ cv::matchShapes(huMoment, theHu, cv::CONTOURS_MATCH_I1, 0) };
+		cout << "val" << ends << v << endl;
+		if (v < 1) {//即匹配高
+			cout << "the" << ends << i << endl;
+			cv::drawContours(src0, contours0, i, { 0,0,255 }, 2);
 		}
-		else if (ratio < 0.5) {//长方形
-			cv::circle(src, { cx,cy }, 2, { 0,0,255 }, -1);
-			for (auto beg{ lines.cbegin() }; beg != lines.cend(); ++beg) {//绘制矩形框
-				auto second{ beg + 1 };
-				if (beg == lines.cend() - 1) {//如果当前点是最后一点,则连接到第一点
-					second = lines.cbegin();
-				}
-				cv::line(src, *beg, *second, { 255,0,255 }, 2);
-			}
-		}
+		++i;
 	}
-	cv::imshow("dst", src);
+	cv::imshow("dst", src0);
 
 	cv::waitKey(0);
 }
