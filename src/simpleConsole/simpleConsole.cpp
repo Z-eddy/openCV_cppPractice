@@ -1,38 +1,44 @@
-﻿#include<vector>
-#include<iostream>
+﻿#include<iostream>
+#include<vector>
 #include "opencv2/opencv.hpp"
 using std::vector;
-using std::cout;
 using std::endl;
 using std::ends;
+using std::cout;
+using namespace cv;
 
 int main()
 {
-	auto src{ cv::imread("E:/practice/openCV/material/images/myMask.png") };
+	auto src{ cv::imread("E:/practice/openCV/material/images/contours.png") };
 	cv::Mat canny;
 	cv::Canny(src, canny, 80, 160);
+	cv::imshow("canny", canny);
+	auto k{ cv::getStructuringElement(cv::MORPH_RECT,{3,3}) };
+	cv::Mat dilate;
+	cv::dilate(canny, dilate, k);
 	vector<cv::Mat>contours;
 	cv::findContours(canny, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-	cv::Mat dst{ cv::Mat::zeros(src.size(),CV_32FC3) };
-	cout << contours.size() << endl;
-	auto row{ dst.rows };
-	auto col{ dst.cols };
-	for (int i{ 0 }; i != row; ++i) {
-		for (int j{ 0 }; j != col; ++j) {
-			auto distance{ cv::pointPolygonTest(contours[0],cv::Point{j,i},true) };
-			if (distance == 0) {//点在边缘上
-				dst.at<cv::Vec3f>(i, j) = cv::Vec3f{ 255,255,255 };
-			}
-			else if (distance > 0) {//点在内部
-				dst.at<cv::Vec3f>(i, j) = cv::Vec3f(255 - distance, 0, 0);
-			}
-			else {//点在外部
-				dst.at<cv::Vec3f>(i, j) = cv::Vec3f(0, 0, 255 + distance);
+	cv::Mat dst{ src.size(),src.type(),{0,0,0} };
+	for (auto i{ 0 }; i != contours.size(); ++i) {
+		cv::drawContours(dst, contours, i, { 255,255,255 });//绘制本身的轮廓
+
+		cv::Mat data{ src.size(),CV_32F };//单通道用于计数
+		auto row{ data.rows };
+		auto col{ data.cols };
+		for (int r{ 0 }; r != row; ++r) {//计算每个点距离轮廓的距离
+			auto p{ data.ptr<float>(r) };//每行的开头指针
+			for (int c{ 0 }; c != col; ++c) {
+				*p++ = cv::pointPolygonTest(contours.at(i), cv::Point{ c,r }, true);
+				//data.at<float>(r,c) = cv::pointPolygonTest(contours.at(i), cv::Point{ c,r }, true);
 			}
 		}
+		double minV{ 0 }, maxV{ 0 };
+		cv::Point point;
+		cv::minMaxLoc(data, &minV, &maxV, nullptr, &point);
+		if (maxV > 0) {
+			cv::circle(dst, point, maxV, { 0,0,255 });
+		}
 	}
-	cv::convertScaleAbs(dst, dst);
-	dst.convertTo(dst, CV_8UC3);
 	cv::imshow("dst", dst);
 
 	cv::waitKey(0);
