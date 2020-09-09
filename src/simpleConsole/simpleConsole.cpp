@@ -1,50 +1,36 @@
-﻿#include<iostream>
-#include<vector>
-#include "opencv2/opencv.hpp"
+﻿#include<vector>
+#include<iostream>
+#include"opencv2/opencv.hpp"
 using std::vector;
+using std::cout;
 using std::endl;
 using std::ends;
-using std::cout;
-using namespace cv;
 
 int main()
 {
-	auto src{ cv::imread("E:/practice/openCV/material/images/contours.png") };
-	cv::Mat canny;
+	auto src{ cv::imread("D:/temp.png").getUMat(cv::ACCESS_FAST) };
+	cv::UMat canny;
 	cv::Canny(src, canny, 80, 160);
-	cv::imshow("canny", canny);
-	auto k{ cv::getStructuringElement(cv::MORPH_RECT,{3,3}) };
-	cv::Mat dilate;
-	cv::dilate(canny, dilate, k);
-	vector<cv::Mat>contours;
-	cv::findContours(dilate, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-	cv::Mat dst{ src.size(),src.type(),{0,0,0} };
-	for (auto i{ 0 }; i != contours.size(); ++i) {
-		cv::drawContours(dst, contours, i, { 255,255,255 });//绘制本身的轮廓
-		auto rect{ cv::boundingRect(contours.at(i)) };
-		//dst(rect)=cv::Scalar{ 255,0,255 };
-		//cout << rect.x << ends << rect.y << endl;
+	vector<cv::Vec2f>ve;
+	cv::HoughLines(canny, ve, 1, CV_PI / 180, 180);//(src,ve,极坐标r步长,theta角度步长,统计点阈值)
+	for (const auto&item : ve) {//每条直线
+		//原点到直线的垂直线
+		auto r{ item[0] };
+		auto theta{ item[1] };
+		//恰好垂直的点
+		auto x0{ r*std::cos(theta) };
+		auto y0{ r*std::sin(theta) };
+		//随便指定(x1,y1),(x2,y2)绘制线段
+		int L{ 1000 };
+		auto x1{ x0 - L * std::sin(theta) };
+		auto y1{ y0 + L * std::cos(theta) };
 
-		cv::Mat dataA{ src.size(),CV_32F };//单通道用于计数
-		auto data{ dataA(rect) };
-		auto row{ data.rows };
-		auto col{ data.cols };
-		for (int r{ 0 }; r != row; ++r) {//计算每个点距离轮廓的距离
-			auto p{ data.ptr<float>(r) };//每行的开头指针
-			for (int c{ 0 }; c != col; ++c) {
-				*p++ = cv::pointPolygonTest(contours.at(i), cv::Point{ c + rect.x,r + rect.y }, true);
-				//data.at<float>(r,c) = cv::pointPolygonTest(contours.at(i), cv::Point{ c,r }, true);
-			}
-		}
-		double minV{ 0 }, maxV{ 0 };
-		cv::Point point;
-		cv::minMaxLoc(dataA, &minV, &maxV, nullptr, &point);
-		//cout << minV << ends << maxV << '\t' << point.x << ends << point.y << endl;
-		if (maxV > 0) {
-			cv::circle(dst, point, maxV, { 0,0,255 });
-		}
+		auto x2{ x0 + L * std::sin(theta) };
+		auto y2{ y0 - L * std::cos(theta) };
+
+		cv::line(src, cv::Point( x1,y1 ), cv::Point( x2,y2 ), { 0,0,255 });
 	}
-	cv::imshow("dst", dst);
+	cv::imshow("dst", src);
 
 	cv::waitKey(0);
 }
